@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-
     public float moveSpeed = 5f;
     public Transform movePoint;
     public LayerMask whatStopsMovement;
@@ -26,6 +25,14 @@ public class PlayerController : MonoBehaviour
     private bool canMoveDown;
     private bool canMoveRight;
 
+    private Vector3 cubeGenerationPoint;
+    private Vector3 startPosition;
+    private Vector3 endPosition;
+
+    private float x;
+    private float y;
+    private float z;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,6 +43,12 @@ public class PlayerController : MonoBehaviour
         canMoveRight = true;
         canMoveUp = true;
         canMoveDown = true;
+
+        x = transform.position.x;
+        y = transform.position.y;
+        z = transform.position.z;
+
+        cubeGenerationPoint= transform.position;
     }
 
     // Update is called once per frame
@@ -43,6 +56,7 @@ public class PlayerController : MonoBehaviour
     {
         Swipe();
         MoveCharacter();
+        GenerateCubeLogic();
     }
 
     void MoveCharacter()
@@ -71,6 +85,35 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+
+    // The cubes that player will generate after moving
+    void GenerateCubeLogic(){
+        if(transform.position.x == x && transform.position.z >= z + 0.6F){
+            GenerateCube();
+            z = z + 1F;
+            cubeGenerationPoint = new Vector3(x, y, z);
+
+        } else if(transform.position.x == x && transform.position.z <= z - 0.6F){
+            GenerateCube();
+            z = z - 1F;
+            cubeGenerationPoint = new Vector3(x, y, z);
+
+        } else if(transform.position.x <= x - 0.6F && transform.position.z == z){
+            GenerateCube();
+            x = x - 1F;
+            cubeGenerationPoint = new Vector3(x, y, z);
+
+        } else if(transform.position.x >= x + 0.6F && transform.position.z == z){
+            GenerateCube();
+            x = x + 1F;
+            cubeGenerationPoint = new Vector3(x, y, z);
+        }
+    }
+
+    void GenerateCube() {
+        ObjectPooler.Instance.SpawnFromPool("Cube", cubeGenerationPoint);
+    }
+
     void CheckWalls()
     {
         leftHorizontalCollider = Physics.CheckSphere(movePoint.position + new Vector3(-1, 0, 0), 0.3f, whatStopsMovement);
@@ -79,13 +122,10 @@ public class PlayerController : MonoBehaviour
         downVerticalCollider = Physics.CheckSphere(movePoint.position + new Vector3(0, 0, -1), 0.3f, whatStopsMovement);
     }
 
-
-
     void CheckPlayerMovement()
     {
         if (leftHorizontalCollider)
         {
-            print("left");
             canMoveLeft = false;
             movingLeft = false;
             canMoveRight = true;
@@ -94,7 +134,6 @@ public class PlayerController : MonoBehaviour
         }
         if (rightHorizontalCollider)
         {
-            print("right");
             canMoveRight = false;
             movingRight = false;
             canMoveLeft = true;
@@ -103,7 +142,6 @@ public class PlayerController : MonoBehaviour
         }
         if (upVerticalCollider)
         {
-            print("upverticalcollider!!!");
             canMoveUp = false;
             movingUp = false;
             canMoveDown = true;
@@ -112,7 +150,6 @@ public class PlayerController : MonoBehaviour
         }
         if (downVerticalCollider)
         {
-            print("down");
             canMoveDown = false;
             movingDown = false;
             canMoveUp = true;
